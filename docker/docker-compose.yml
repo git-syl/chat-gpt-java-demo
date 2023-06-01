@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  gpt-mysql:
+    build: ./mysql
+    image: gpt-mysql:0.0.1
+    container_name: mysql_container
+    ports:
+      - "3310:3306"
+    volumes:
+      - ~/gpt_mysql8_data/mysql/data:/var/lib/mysql
+      - ~/gpt_mysql8_data/mysql/conf:/etc/mysql/conf.d
+      - ~/gpt_mysql8_data/mysql/log:/var/log/mysql
+    networks:
+      gpt-net:
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping" , "-h", "localhost" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      args:
+        JAR_FILE: chat-gpt-java-demo-0.0.1-SNAPSHOT.jar
+    image: chat-gpt-java-reactor:0.0.1
+    restart: "always"
+    environment:
+      - DB_R2DBC_URL=r2dbc:mysql://gpt-mysql
+      - DB_NAME=chat-gpt
+      - DB_USER_NAME=root
+      - DB_PASSWORD=123456
+      - API_KEY=sk-xx
+      - BASE_URL=https://api.openai.com
+
+    ports:
+      - "8051:8051"
+    volumes:
+      - /log
+    depends_on:
+      - gpt-mysql
+    networks:
+      - gpt-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:8051 | grep -q 'HTTP/1.1 404'",
+        ]
+      interval: 10s
+      timeout: 2s
+      retries: 120
+
+networks:
+  gpt-net:
+
+

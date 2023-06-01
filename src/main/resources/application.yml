@@ -1,0 +1,69 @@
+server:
+  port: 8051
+
+chat-gpt:
+  openAi:
+    systemPrompt: "You are ChatGPT, a large language model trained by syl. Follow the user's instructions carefully. Respond using markdown."
+    maxTokens: 4096
+    apiKey: ${API_KEY}
+  api:
+    connectTimeoutMillis: 55000
+    responseTimeout: 55000
+    readTimeout: 55000
+    writeTimeout: 55000
+    baseUrl: ${BASE_URL}
+  proxy:
+    enabled: false
+    type: http
+    host: '127.0.0.1'
+    port: 7056
+
+
+spring:
+  application:
+    name: chat-gpt-java
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: always
+    deserialization:
+      use-long-for-ints: true
+    time-zone: Asia/Shanghai
+  r2dbc:
+    pool:
+      enabled: true
+      validation-query: "SELECT 'x'"
+      validation-depth: local
+      max-size: 20
+      initial-size: 20
+      max-create-connection-time: 10s
+    name: ${DB_NAME}
+    username: ${DB_USER_NAME}
+    password: ${DB_PASSWORD}
+    properties:
+      serverZoneId: 'Asia/Shanghai'
+      zeroDate: 'use_round'
+      useServerPrepareStatement: true
+      tcpKeepAlive: true
+      tcpNoDelay: true
+      autodetectExtensions: true
+    url: ${DB_R2DBC_URL}
+
+
+
+logging:
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss.SSS,Asia/Shanghai
+  file:
+    name: log/chat-gpt-reactor.log
+  level:
+    root: info
+    org.springframework.r2dbc: DEBUG
+  logback:
+    rollingpolicy:
+      file-name-pattern: ${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz
+      max-file-size: 10MB
+      max-history: 60
+
+
+
+
